@@ -1,0 +1,72 @@
+From a54d95e47fd603718dc506dcfce0cfa519248292 Mon Sep 17 00:00:00 2001
+From: Taneli Hukkinen <3275109+hukkin@users.noreply.github.com>
+Date: Mon, 3 Jan 2022 04:29:16 +0200
+Subject: [PATCH] Remove python-dateutil test dependency (#158)
+
+---
+ .pre-commit-config.yaml |  1 -
+ tests/burntsushi.py     | 23 +++++++++++++++++++++--
+ tests/requirements.txt  |  1 -
+ 3 files changed, 21 insertions(+), 4 deletions(-)
+
+diff --git a/.pre-commit-config.yaml b/.pre-commit-config.yaml
+index e50d256..a139350 100644
+--- a/.pre-commit-config.yaml
++++ b/.pre-commit-config.yaml
+@@ -51,5 +51,4 @@ repos:
+   - id: mypy
+     args: ["--scripts-are-modules"]
+     additional_dependencies:
+-    - types-python-dateutil
+     - pytest
+diff --git a/tests/burntsushi.py b/tests/burntsushi.py
+index 54087cb..44cea5b 100644
+--- a/tests/burntsushi.py
++++ b/tests/burntsushi.py
+@@ -3,7 +3,6 @@
+ import datetime
+ from typing import Any
+ 
+-import dateutil.parser
+ import pytest
+ 
+ 
+@@ -66,7 +65,27 @@ def normalize(d: dict) -> dict:
+ 
+ 
+ def normalize_datetime_str(dt_str: str) -> str:
+-    return dateutil.parser.isoparse(dt_str).isoformat()
++    if dt_str[-1].lower() == "z":
++        dt_str = dt_str[:-1] + "+00:00"
++
++    date = dt_str[:10]
++    rest = dt_str[11:]
++
++    if "+" in rest:
++        sign = "+"
++    elif "-" in rest:
++        sign = "-"
++    else:
++        sign = ""
++
++    if sign:
++        time, _, offset = rest.partition(sign)
++    else:
++        time = rest
++        offset = ""
++
++    time = time.rstrip("0") if "." in time else time
++    return date + "T" + time + sign + offset
+ 
+ 
+ def normalize_float_str(float_str: str) -> str:
+diff --git a/tests/requirements.txt b/tests/requirements.txt
+index ce5780e..c34e694 100644
+--- a/tests/requirements.txt
++++ b/tests/requirements.txt
+@@ -1,5 +1,4 @@
+ pytest
+ pytest-randomly
+ pytest-cov >=2.12.1
+-python-dateutil
+ coverage !=6.0

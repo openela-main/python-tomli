@@ -1,0 +1,30 @@
+From 03f6ef8f3e40c3088a22afde5eec50ffa9f21cfd Mon Sep 17 00:00:00 2001
+From: Maxwell G <gotmax@e.email>
+Date: Thu, 6 Oct 2022 23:18:34 -0500
+Subject: [PATCH] tests: Replace tmp_path with tmpdir pytest fixture
+
+RHEL 8's pytest is too old and does not support the tmp_path filter.
+---
+ tests/test_misc.py | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/tests/test_misc.py b/tests/test_misc.py
+index 2eec882..ece225f 100644
+--- a/tests/test_misc.py
++++ b/tests/test_misc.py
+@@ -8,10 +8,10 @@ import pytest
+ import tomli
+ 
+ 
+-def test_load(tmp_path):
++def test_load(tmpdir):
+     content = "one=1 \n two='two' \n arr=[]"
+     expected = {"one": 1, "two": "two", "arr": []}
+-    file_path = tmp_path / "test.toml"
++    file_path = Path(tmpdir) / "test.toml"
+     file_path.write_text(content)
+ 
+     # Test text mode
+-- 
+2.37.3
+
